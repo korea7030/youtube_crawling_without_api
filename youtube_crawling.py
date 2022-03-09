@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import time
 import pandas as pd
 import requests
-import re
+import json
 
 def get_urls_from_youtube_with_keyword(keyword):
     titles = []
@@ -41,11 +41,14 @@ def get_urls_from_youtube_with_keyword(keyword):
     datas = soup.select('a#video-title')
 
     for data in datas:
-        title = data.text.replace('\n', '')
-        url = "https://www.youtube.com/" + data.get('href')
+        href = data.get('href')
+       
+        if 'shorts' not in href:
+            title = data.text.replace('\n', '')
+            url = "https://www.youtube.com" + data.get('href')
 
-        titles.append(title)
-        urls.append(url)
+            titles.append(title)
+            urls.append(url)
     
     return titles, urls
 
@@ -73,3 +76,30 @@ def crawl_youtube_page_html_sources(urls):
 
         driver.quit()
     return html_sources
+
+
+def get_video_info(html_sources):
+    my_dataframes = []
+    for html in html_sources:
+        soup = BeautifulSoup(html, 'lxml')
+        
+        script_tags = soup.select('#scriptTag')
+        
+        if len(script_tags) > 0:
+            script_data = json.loads(script_tags[0].text)
+            print('script_data ====== : {} '.format(script_data))
+            tags = script_data.get('description').split('\n\n')
+            view_count = script_data.get('interactionCount')
+            published_date = script_data.get('uploadDate')
+            title = script_data.get('name')
+            
+            channel_tag = soup.select('yt-formatted-string#text.ytd-channel-name > a')
+            if len(channel_tag) > 0:
+                channel_text = channel_tag[0].text
+
+            pd_data = {'title': title, 'channel': channel_text, 'published_date': published_date, 'view_count': view_count, 'tags': tags}    
+
+            youtube_pd = pd.DataFrame(pd_data)
+            my_dataframes.append(youtube_pd)
+    
+    return my_dataframes
