@@ -79,7 +79,7 @@ def crawl_youtube_page_html_sources(urls):
 
 
 def get_video_info(html_sources):
-    my_dataframes = []
+    data_list = []
     for html in html_sources:
         soup = BeautifulSoup(html, 'lxml')
         
@@ -88,7 +88,7 @@ def get_video_info(html_sources):
         if len(script_tags) > 0:
             script_data = json.loads(script_tags[0].text)
             print('script_data ====== : {} '.format(script_data))
-            tags = script_data.get('description').split('\n\n')
+            tags = script_data.get('description').split('\n\n')[0]
             view_count = script_data.get('interactionCount')
             published_date = script_data.get('uploadDate')
             title = script_data.get('name')
@@ -98,8 +98,13 @@ def get_video_info(html_sources):
                 channel_text = channel_tag[0].text
 
             pd_data = {'title': title, 'channel': channel_text, 'published_date': published_date, 'view_count': view_count, 'tags': tags}    
-
-            youtube_pd = pd.DataFrame(pd_data)
-            my_dataframes.append(youtube_pd)
+            print('========= pd_data : {} ======='.format(pd_data))
+            # youtube_pd = pd.DataFrame(pd_data, index=[0])
+            data_list.append(pd_data)
     
-    return my_dataframes
+    return data_list
+
+def convert_dataframe(keyword, data_list):
+    df = pd.DataFrame(data_list)
+    df.to_csv('{}.csv'.format(keyword), sep='|', na_rep='', index=False, encoding='utf-8-sig')
+    print('make csv Done')
