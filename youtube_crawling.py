@@ -5,13 +5,13 @@ import pandas as pd
 import requests
 import json
 
-def get_urls_from_youtube_with_keyword(keyword):
+def get_urls_from_youtube_with_keyword(keyword, start_date=None, end_date=None):
     titles = []
     urls = []
 
     search_keyword_encode = requests.utils.quote(keyword)
 
-    url = 'https://www.youtube.com/results?search_query=' + search_keyword_encode
+    url = 'https://www.youtube.com/results?search_query=' + search_keyword_encode + '+after:{}++before:{}'.format(start_date, end_date)
 
     driver = wd.Chrome(executable_path='/usr/local/bin/chromedriver')
 
