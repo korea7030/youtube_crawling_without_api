@@ -1,4 +1,6 @@
-from selenium import webdriver as wd
+from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
+
 from bs4 import BeautifulSoup
 import time
 import pandas as pd
@@ -12,8 +14,7 @@ def get_urls_from_youtube_with_keyword(keyword, start_date=None, end_date=None):
     search_keyword_encode = requests.utils.quote(keyword)
 
     url = 'https://www.youtube.com/results?search_query=' + search_keyword_encode + '+after:{}++before:{}'.format(start_date, end_date)
-
-    driver = wd.Chrome(executable_path='/usr/local/bin/chromedriver')
+    driver = webdriver.Chrome(ChromeDriverManager().install())
 
     driver.get(url)
 
@@ -56,7 +57,7 @@ def crawl_youtube_page_html_sources(urls):
     html_sources = []
 
     for url in urls:
-        driver = wd.Chrome(executable_path='/usr/local/bin/chromedriver')
+        driver = webdriver.Chrome(ChromeDriverManager().install())
         driver.get(url)
 
         last_page_height = driver.execute_script("return document.documentElement.scrollHeight")
